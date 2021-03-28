@@ -1,9 +1,16 @@
 //  server/index.js
 const express = require('express');
 
+const morgan = require('morgan');
+
 const logger = require('./config/logger');
 
 const app = express();
+
+// Setup middleware
+app.use(
+  morgan('combined', { stream: { write: (message) => logger.info(message) } })
+);
 
 // No route found handler
 app.use((req, res, next) => {
