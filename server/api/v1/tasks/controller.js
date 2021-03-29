@@ -1,12 +1,30 @@
 // server/api/v1/tasks/controller.js
 
-exports.create = (req, res, next) => {
+const { Model } = require('mongoose');
+const model = require('./model');
+
+exports.create = async (req, res, next) => {
   const { body = {} } = req;
-  res.json(body);
+  // const document = new Model(body);
+
+  const document = Model.create(body);
+
+  try {
+    const doc = await document.save();
+    res.status(201);
+    res.json(doc);
+  } catch (error) {
+    next(new Error(error));
+  }
 };
 
-exports.all = (req, res, next) => {
-  res.json([]);
+exports.all = async (req, res, next) => {
+  try {
+    const docs = await Model.find({}).exec();
+    res.json(docs);
+  } catch (err) {
+    next(new Error(err));
+  }
 };
 
 exports.read = (req, res, next) => {
