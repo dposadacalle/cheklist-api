@@ -1,13 +1,10 @@
 // server/api/v1/tasks/controller.js
-
-const { Model } = require('mongoose');
-const model = require('./model');
+const { Error } = require('mongoose');
+const Model = require('./model');
 
 exports.create = async (req, res, next) => {
   const { body = {} } = req;
-  // const document = new Model(body);
-
-  const document = Model.create(body);
+  const document = new Model(body);
 
   try {
     const doc = await document.save();
@@ -27,26 +24,57 @@ exports.all = async (req, res, next) => {
   }
 };
 
-exports.read = (req, res, next) => {
-  const { params = {} } = req;
-  const { id } = params;
+exports.read = async (req, res, next) => {
+  const { doc = {} } = req;
 
-  res.json({ id });
+  res.json(doc);
 };
 
-exports.update = (req, res, next) => {
-  const { body = {}, params = {} } = req;
-  const { id } = params;
+exports.update = async (req, res, next) => {
+  const { body = {}, doc = {} } = req;
 
-  res.json({
-    id,
-    body,
-  });
+  // Object.assing: Mezcla (Union) del contenido del primer objeto con el contenido del segundo obj
+
+  // se recomienda para otros casos mas avanzados la función merge de la librería lodash.
+
+  Object.assign(doc, body);
+
+  try {
+    const updated = await Model.save();
+    res.json(updated);
+  } catch (err) {
+    next(new Error(err));
+  }
 };
 
-exports.delete = (req, res, next) => {
-  const { params = {} } = req;
-  const { id } = params;
+exports.delete = async (req, res, next) => {
+  const { doc = {} } = req;
 
-  res.json({ id });
+  try {
+    const removed = await Model.remove();
+    res.json(removed);
+  } catch (err) {
+    next(new Error(err));
+  }
+};
+
+exports.id = async (req, res, next, id) => {
+  try {
+    const doc = await Model.findById(id).exec();
+
+    if (!doc) {
+      const message = `${Model.modelName} not found`;
+
+      next({
+        message,
+        statusCode: 404,
+        level: 'warn',
+      });
+    } else {
+      req.doc = doc;
+      next();
+    }
+  } catch (err) {
+    next(new Error(err));
+  }
 };
