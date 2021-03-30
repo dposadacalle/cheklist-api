@@ -1,6 +1,7 @@
 // server/api/v1/tasks/controller.js
 const { Error } = require('mongoose');
 const Model = require('./model');
+const { paginationParseParams } = require('../../../utils');
 
 exports.create = async (req, res, next) => {
   const { body = {} } = req;
@@ -20,12 +21,36 @@ exports.create = async (req, res, next) => {
 };
 
 exports.all = async (req, res, next) => {
+  const { query } = req;
+  let { limit, skip, page } = paginationParseParams(query);
+
+  const all = Model.find({}).skip(skip).limit(limit).exec();
+  const count = Model.countDocuments();
+
+  limit = parseInt(limit, 10);
+  page = parseInt(page, 10);
+
+  if (skip) {
+    skip = parseInt(skip, 10);
+  } else {
+    skip = (page - 1) * limit;
+  }
+
   try {
-    const docs = await Model.find({}).exec();
+    const data = await Promise.all([all.exec(), count.exec()]);
+    const [docs, total] = data;
+    const pages = Math.ceil(total / limit);
 
     res.json({
       success: true,
       data: docs,
+      meta: {
+        limit,
+        skip,
+        total,
+        page,
+        pages,
+      },
     });
   } catch (err) {
     next(new Error(err));

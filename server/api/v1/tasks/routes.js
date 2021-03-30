@@ -11,8 +11,6 @@ const controller = require('./controller');
 1* /api/tasks/:id DELETE - DELETE
 */
 
-router.route('/').post(controller.create).get(controller.all);
-
 router.param('id', controller.id);
 
 router
@@ -20,5 +18,7 @@ router
   .get(controller.read)
   .put(controller.update)
   .delete(controller.delete);
+
+router.route('/').get(controller.all).post(controller.create);
 
 module.exports = router;

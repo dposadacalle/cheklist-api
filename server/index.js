@@ -51,7 +51,6 @@ app.use((err, req, res, next) => {
   logger[level](log);
 
   // logger.error(message);
-
   res.status(statusCode);
   res.json({
     error: true,
