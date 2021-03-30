@@ -42,4 +42,7 @@ const task = new Schema(fields, {
   timestamps: true,
 });
 
-module.exports = mongoose.model('tasks', task);
+module.exports = {
+  Model: mongoose.model('tasks', task),
+  fields,
+};
