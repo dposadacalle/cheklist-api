@@ -1,8 +1,10 @@
 // server/api/v1/tasks/controller.js
 
-const { Model, fields } = require('./model');
+const { Model, fields, references } = require('./model');
 const { paginationParseParams } = require('../../../utils');
 const { sortParseParams, sortCompactToStr } = require('../../../utils');
+
+const referencesNames = Object.getOwnPropertyNames(references);
 
 exports.create = async (req, res, next) => {
   const { body = {} } = req;
@@ -25,22 +27,15 @@ exports.all = async (req, res, next) => {
   const { query = {} } = req;
   const { limit, skip, page } = paginationParseParams(query);
   const { sortBy, direction } = sortParseParams(query, fields);
+  const populate = references.join(' ');
 
   const all = Model.find({})
     .sort(sortCompactToStr(sortBy, direction))
     .skip(skip)
-    .limit(limit);
+    .limit(limit)
+    .populate(populate);
 
   const count = Model.countDocuments();
-
-  limit = parseInt(limit, 10);
-  page = parseInt(page, 10);
-
-  if (skip) {
-    skip = parseInt(skip, 10);
-  } else {
-    skip = (page - 1) * limit;
-  }
 
   try {
     const data = await Promise.all([all.exec(), count.exec()]);
@@ -110,8 +105,10 @@ exports.delete = async (req, res, next) => {
 };
 
 exports.id = async (req, res, next, id) => {
+  const populate = references.join(' ');
+
   try {
-    const doc = await Model.findById(id).exec();
+    const doc = await await Model.findById(id).populate(populate).exec();
 
     if (!doc) {
       const message = `${Model.modelName} not found`;

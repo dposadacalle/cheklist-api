@@ -4,6 +4,19 @@ const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
 
+const references = {
+  userId: {
+    type: Schema.Types.ObjectId,
+    ref: 'user',
+    required: true,
+  },
+
+  groupId: {
+    type: Schema.Types.ObjectId,
+    ref: 'group',
+  },
+};
+
 const fields = {
   title: {
     type: String,
@@ -33,7 +46,7 @@ const fields = {
   },
 };
 
-const task = new Schema(fields, {
+const task = new Schema(Object.assign(fields, references), {
   /**
    * Opcion:timestamps -> nos añada los atributos
    * de createdAt y updatedAt, el primero se establece una vez se guarda satisfactoriamente el
@@ -45,4 +58,5 @@ const task = new Schema(fields, {
 module.exports = {
   Model: mongoose.model('tasks', task),
   fields,
+  references,
 };
