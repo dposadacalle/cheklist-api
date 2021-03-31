@@ -1,8 +1,14 @@
 // server/api/v1/tasks/controller.js
 
-const { Model, fields, references } = require('./model');
+const { Model, fields, references, virtuals } = require('./model');
 const { paginationParseParams } = require('../../../utils');
 const { sortParseParams, sortCompactToStr } = require('../../../utils');
+const { populateToObject } = require('../../../utils');
+
+const referencesNames = [
+  ...Object.getOwnPropertyNames(references),
+  ...Object.getOwnPropertyNames(virtuals),
+];
 
 exports.create = async (req, res, next) => {
   const { body = {} } = req;
@@ -25,7 +31,7 @@ exports.all = async (req, res, next) => {
   const { query = {} } = req;
   const { limit, skip, page } = paginationParseParams(query);
   const { sortBy, direction } = sortParseParams(query, fields);
-  const populate = references.join(' ');
+  const populate = populateToObject(referencesNames, virtuals);
 
   const all = Model.find({})
     .sort(sortCompactToStr(sortBy, direction))
