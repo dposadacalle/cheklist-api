@@ -1,6 +1,11 @@
 // server/api/v1/tasks/routes.js
 
-const router = require('express').Router();
+const router = require('express').Router({
+  //  Indica  al enrutador de las tareas que mezcle los parámetros de la ruta padre con
+  // los parámetros de las rutas dinámicas que se definan en sus ruta
+  mergeParams: true,
+});
+
 const controller = require('./controller');
 
 /*
@@ -14,11 +19,14 @@ const controller = require('./controller');
 router.param('id', controller.id);
 
 router
-  .route('/:id')
-  .get(controller.read)
-  .put(controller.update)
-  .delete(controller.delete);
+  .route('/')
+  .post(controller.parentId, controller.create)
+  .get(controller.parentId, controller.all);
 
-router.route('/').get(controller.all).post(controller.create);
+router
+  .route('/:id')
+  .get(controller.parentId, controller.read)
+  .put(controller.parentId, controller.update)
+  .delete(controller.parentId, controller.delete);
 
 module.exports = router;
